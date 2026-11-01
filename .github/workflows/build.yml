@@ -1,6 +1,7 @@
 name: Build APK
 on:
-  push: { branches: [ main ] }
+  push:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -8,30 +9,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up JDK 17
         uses: actions/setup-java@v5
-        with: { distribution: temurin, java-version: '17' }
-        
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4.0.4
-        with: 
+        with:
           packages: 'platforms;android-34'
-          
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-        with: { gradle-version: 8.9 }
-        
+        with:
+          gradle-version: 8.9
+
       - name: Generate wrapper
         run: gradle wrapper --gradle-version 8.9
-        
+
       - name: Decode Keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/nougaminal-release.jks
-        
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ${{ github.workspace }}/nougaminal-release.jks
+
       - name: Build Release APK
-        run: ./gradlew assembleRelease --no-daemon -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/app/nougaminal-release.jks -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
-        
-      - uses: actions/upload-artifact@v4
+        run: ./gradlew assembleRelease --no-daemon \
+          -Pandroid.injected.signing.store.file=${{ github.workspace }}/nougaminal-release.jks \
+          -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
+          -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+          -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: Nougaminal-release
           path: app/build/outputs/apk/release/*.apk
