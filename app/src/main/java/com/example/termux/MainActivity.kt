@@ -17,6 +17,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var terminalView: TerminalView
     private var terminalSession: TerminalSession? = null
 
+    // TerminalSessionClient 接口实现（源自官方源码 TerminalSessionClient.java）[reference:3]
     private val sessionClient = object : TerminalSessionClient {
         override fun onTextChanged(changedSession: TerminalSession) {}
         override fun onTitleChanged(changedSession: TerminalSession) {}
@@ -27,9 +28,6 @@ class MainActivity : ComponentActivity() {
         override fun onColorsChanged(session: TerminalSession) {}
         override fun onTerminalCursorStateChange(state: Boolean) {}
         override fun getTerminalCursorStyle(): Int? = null
-        
-        // 严格对齐官方 TerminalSessionClient 的完整方法集
-        override fun setTerminalShellPid(session: TerminalSession, pid: Int) {}
         override fun logError(tag: String?, message: String?) {}
         override fun logWarn(tag: String?, message: String?) {}
         override fun logInfo(tag: String?, message: String?) {}
@@ -47,20 +45,33 @@ class MainActivity : ComponentActivity() {
                 factory = { context ->
                     terminalView = TerminalView(context, null).apply {
                         setTerminalViewClient(object : TerminalViewClient {
+                            // 手势与缩放[reference:4]
                             override fun onScale(scale: Float): Float = 1.0f
                             override fun onSingleTapUp(e: MotionEvent?) {}
+                            override fun onLongPress(event: MotionEvent?): Boolean = false
+
+                            // 配置查询[reference:5]
                             override fun shouldBackButtonBeMappedToEscape(): Boolean = false
-                            // 官方源码拼写为 shouldEnforeCharBasedInput
-                            override fun shouldEnforeCharBasedInput(): Boolean = false
+                            override fun shouldEnforceCharBasedInput(): Boolean = false
                             override fun shouldUseCtrlSpaceWorkaround(): Boolean = false
                             override fun isTerminalViewSelected(): Boolean = true
+
+                            // 模式通知[reference:6]
                             override fun copyModeChanged(copyMode: Boolean) {}
+                            override fun onEmulatorSet() {}
+
+                            // 键盘事件处理[reference:7]
                             override fun onKeyDown(keyCode: Int, e: KeyEvent, session: TerminalSession?): Boolean = false
                             override fun onKeyUp(keyCode: Int, e: KeyEvent): Boolean = false
-                            override fun onLongPress(event: MotionEvent?): Boolean = false
+                            override fun onCodePoint(codePoint: Int, ctrlDown: Boolean, session: TerminalSession?): Boolean = false
+
+                            // 修饰键状态[reference:8]
                             override fun readControlKey(): Boolean = false
                             override fun readAltKey(): Boolean = false
-                            override fun onCodePoint(codePoint: Int, ctrlDown: Boolean, session: TerminalSession?): Boolean = false
+                            override fun readShiftKey(): Boolean = false
+                            override fun readFnKey(): Boolean = false
+
+                            // 日志委托[reference:9]
                             override fun logError(tag: String?, message: String?) {}
                             override fun logWarn(tag: String?, message: String?) {}
                             override fun logInfo(tag: String?, message: String?) {}
@@ -86,7 +97,8 @@ class MainActivity : ComponentActivity() {
             "HOME=$cwd",
             "PATH=/sbin:/system/sbin:/system/bin:/system/xbin"
         )
-        
+
+        // TerminalSession 构造参数签名见官方源码[reference:10]
         terminalSession = TerminalSession(shell, cwd, args, env, 1000, sessionClient)
         terminalView.attachSession(terminalSession)
         terminalSession?.updateSize(80, 24, 0, 0)
