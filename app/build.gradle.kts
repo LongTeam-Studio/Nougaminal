@@ -25,8 +25,8 @@ dependencies {
     implementation("org.connectbot:termlib:0.0.40") {
         exclude(group = "com.google.android.material")
     }
-    // 从 Termux 官方仓库拉取视图和底层
-    implementation("com.termux:terminal-view:0.118.0")
+    implementation(files("libs/terminal-view-0.118.0.aar"))
+    implementation(files("libs/terminal-emulator-0.118.0.aar"))
     implementation("com.github.topjohnwu.libsu:core:6.0.0")
     implementation(platform("androidx.compose:compose-bom:2026.05.01"))
     implementation("androidx.compose.ui:ui")
