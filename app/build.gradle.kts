@@ -22,10 +22,12 @@ android {
     kotlinOptions { jvmTarget = "17" }
 }
 dependencies {
-    implementation("org.connectbot:termlib:0.0.40")
+    implementation("org.connectbot:termlib:0.0.40") {
+        exclude(group = "com.google.android.material")
+    }
     implementation("com.termux:terminal-emulator:0.118.0")
     implementation("com.github.topjohnwu.libsu:core:6.0.0")
-    implementation(platform("androidx.compose:compose-bom:2024.09.03"))
+    implementation(platform("androidx.compose:compose-bom:2026.05.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.activity:activity-compose:1.9.2")
