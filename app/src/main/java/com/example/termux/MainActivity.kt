@@ -28,6 +28,7 @@ class MainActivity : ComponentActivity() {
         override fun onColorsChanged(session: TerminalSession) {}
         override fun onTerminalCursorStateChange(state: Boolean) {}
         override fun getTerminalCursorStyle(): Int? = null
+        override fun setTerminalShellPid(session: TerminalSession, pid: Int) {}
         override fun logError(tag: String?, message: String?) {}
         override fun logWarn(tag: String?, message: String?) {}
         override fun logInfo(tag: String?, message: String?) {}
