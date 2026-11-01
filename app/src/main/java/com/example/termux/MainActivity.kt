@@ -6,6 +6,7 @@ import android.view.MotionEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.termux.terminal.TerminalSession
@@ -17,7 +18,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var terminalView: TerminalView
     private var terminalSession: TerminalSession? = null
 
-    // TerminalSessionClient 接口实现（源自官方源码 TerminalSessionClient.java）[reference:3]
     private val sessionClient = object : TerminalSessionClient {
         override fun onTextChanged(changedSession: TerminalSession) {}
         override fun onTitleChanged(changedSession: TerminalSession) {}
@@ -46,63 +46,47 @@ class MainActivity : ComponentActivity() {
                 factory = { context ->
                     terminalView = TerminalView(context, null).apply {
                         setTerminalViewClient(object : TerminalViewClient {
-                            // 手势与缩放[reference:4]
                             override fun onScale(scale: Float): Float = 1.0f
                             override fun onSingleTapUp(e: MotionEvent?) {}
-                            override fun onLongPress(event: MotionEvent?): Boolean = false
-
-                            // 配置查询[reference:5]
                             override fun shouldBackButtonBeMappedToEscape(): Boolean = false
-                            override fun shouldEnforceCharBasedInput(): Boolean = false
+                            override fun shouldEnforeCharBasedInput(): Boolean = false
                             override fun shouldUseCtrlSpaceWorkaround(): Boolean = false
                             override fun isTerminalViewSelected(): Boolean = true
-
-                            // 模式通知[reference:6]
                             override fun copyModeChanged(copyMode: Boolean) {}
-                            override fun onEmulatorSet() {}
-
-                            // 键盘事件处理[reference:7]
                             override fun onKeyDown(keyCode: Int, e: KeyEvent, session: TerminalSession?): Boolean = false
                             override fun onKeyUp(keyCode: Int, e: KeyEvent): Boolean = false
-                            override fun onCodePoint(codePoint: Int, ctrlDown: Boolean, session: TerminalSession?): Boolean = false
-
-                            // 修饰键状态[reference:8]
+                            override fun onLongPress(event: MotionEvent?): Boolean = false
                             override fun readControlKey(): Boolean = false
                             override fun readAltKey(): Boolean = false
                             override fun readShiftKey(): Boolean = false
                             override fun readFnKey(): Boolean = false
-
-                            // 日志委托[reference:9]
-                            override fun logError(tag: String?, message: String?) {}
-                            override fun logWarn(tag: String?, message: String?) {}
-                            override fun logInfo(tag: String?, message: String?) {}
-                            override fun logDebug(tag: String?, message: String?) {}
-                            override fun logVerbose(tag: String?, message: String?) {}
-                            override fun logStackTraceWithMessage(tag: String?, message: String?, e: Exception?) {}
-                            override fun logStackTrace(tag: String?, e: Exception?) {}
                         })
                     }
                     terminalView
                 }
             )
-            startShellSession()
+            
+            // 使用 LaunchedEffect 确保在 View 树构建完毕后再启动 Shell
+            LaunchedEffect(Unit) {
+                startShellSession()
+            }
         }
     }
 
     private fun startShellSession() {
-        val shell = "/system/bin/sh"
-        val cwd = filesDir.absolutePath
-        val args = arrayOf("-l")
-        val env = arrayOf(
-            "TERM=xterm-256color",
-            "HOME=$cwd",
-            "PATH=/sbin:/system/sbin:/system/bin:/system/xbin"
-        )
-
-        // TerminalSession 构造参数签名见官方源码[reference:10]
-        terminalSession = TerminalSession(shell, cwd, args, env, 1000, sessionClient)
-        terminalView.attachSession(terminalSession)
-        terminalSession?.updateSize(80, 24, 0, 0)
+        if (::terminalView.isInitialized && terminalSession == null) {
+            val shell = "/system/bin/sh"
+            val cwd = filesDir.absolutePath
+            val args = arrayOf("-l")
+            val env = arrayOf(
+                "TERM=xterm-256color",
+                "HOME=$cwd",
+                "PATH=/sbin:/system/sbin:/system/bin:/system/xbin"
+            )
+            terminalSession = TerminalSession(shell, cwd, args, env, 1000, sessionClient)
+            terminalView.attachSession(terminalSession)
+            terminalSession?.updateSize(80, 24, 0, 0)
+        }
     }
 
     override fun onDestroy() {
