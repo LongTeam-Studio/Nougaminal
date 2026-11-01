@@ -5,7 +5,7 @@ plugins {
 }
 android {
     namespace = "com.example.termux"
-    compileSdk = 35
+    compileSdk = 34
     defaultConfig {
         applicationId = "com.example.termux"
         minSdk = 24
@@ -22,9 +22,7 @@ android {
     kotlinOptions { jvmTarget = "17" }
 }
 dependencies {
-    implementation("org.connectbot:termlib:0.0.40") {
-        exclude(group = "com.google.android.material")
-    }
+    // 只使用本地的 Termux 官方 AAR
     implementation(files("libs/terminal-view-0.118.0.aar"))
     implementation(files("libs/terminal-emulator-0.118.0.aar"))
     implementation("com.github.topjohnwu.libsu:core:6.0.0")
