@@ -1,6 +1,8 @@
 package com.example.termux
 
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.MotionEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +27,8 @@ class MainActivity : ComponentActivity() {
         override fun onColorsChanged(session: TerminalSession) {}
         override fun onTerminalCursorStateChange(state: Boolean) {}
         override fun getTerminalCursorStyle(): Int? = null
+        
+        // 严格对齐官方 TerminalSessionClient 的完整方法集
         override fun setTerminalShellPid(session: TerminalSession, pid: Int) {}
         override fun logError(tag: String?, message: String?) {}
         override fun logWarn(tag: String?, message: String?) {}
@@ -32,6 +36,7 @@ class MainActivity : ComponentActivity() {
         override fun logDebug(tag: String?, message: String?) {}
         override fun logVerbose(tag: String?, message: String?) {}
         override fun logStackTraceWithMessage(tag: String?, message: String?, e: Exception?) {}
+        override fun logStackTrace(tag: String?, e: Exception?) {}
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,16 +47,27 @@ class MainActivity : ComponentActivity() {
                 factory = { context ->
                     terminalView = TerminalView(context, null).apply {
                         setTerminalViewClient(object : TerminalViewClient {
-                            override fun onScale(scale: Float): Boolean = false
-                            override fun onSingleTapUp(e: android.view.MotionEvent?) {}
+                            override fun onScale(scale: Float): Float = 1.0f
+                            override fun onSingleTapUp(e: MotionEvent?) {}
                             override fun shouldBackButtonBeMappedToEscape(): Boolean = false
-                            override fun shouldEnforceCharBasedInput(): Boolean = false
+                            // 官方源码拼写为 shouldEnforeCharBasedInput
+                            override fun shouldEnforeCharBasedInput(): Boolean = false
                             override fun shouldUseCtrlSpaceWorkaround(): Boolean = false
                             override fun isTerminalViewSelected(): Boolean = true
                             override fun copyModeChanged(copyMode: Boolean) {}
-                            override fun onKeyDown(keyCode: Int, e: android.view.KeyEvent, session: TerminalSession?): Boolean = false
-                            override fun onKeyUp(keyCode: Int, e: android.view.KeyEvent): Boolean = false
-                            override fun onLongPress(event: android.view.MotionEvent?): Boolean = false
+                            override fun onKeyDown(keyCode: Int, e: KeyEvent, session: TerminalSession?): Boolean = false
+                            override fun onKeyUp(keyCode: Int, e: KeyEvent): Boolean = false
+                            override fun onLongPress(event: MotionEvent?): Boolean = false
+                            override fun readControlKey(): Boolean = false
+                            override fun readAltKey(): Boolean = false
+                            override fun onCodePoint(codePoint: Int, ctrlDown: Boolean, session: TerminalSession?): Boolean = false
+                            override fun logError(tag: String?, message: String?) {}
+                            override fun logWarn(tag: String?, message: String?) {}
+                            override fun logInfo(tag: String?, message: String?) {}
+                            override fun logDebug(tag: String?, message: String?) {}
+                            override fun logVerbose(tag: String?, message: String?) {}
+                            override fun logStackTraceWithMessage(tag: String?, message: String?, e: Exception?) {}
+                            override fun logStackTrace(tag: String?, e: Exception?) {}
                         })
                     }
                     terminalView
@@ -70,7 +86,7 @@ class MainActivity : ComponentActivity() {
             "HOME=$cwd",
             "PATH=/sbin:/system/sbin:/system/bin:/system/xbin"
         )
-
+        
         terminalSession = TerminalSession(shell, cwd, args, env, 1000, sessionClient)
         terminalView.attachSession(terminalSession)
         terminalSession?.updateSize(80, 24, 0, 0)
