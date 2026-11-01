@@ -25,8 +25,10 @@ class MainActivity : ComponentActivity() {
         override fun onColorsChanged(session: TerminalSession) {}
         override fun onTerminalCursorStateChange(state: Boolean) {}
         override fun getTerminalCursorStyle(): Int? = null
-        // 补齐缺失的抽象方法
-        override fun setTerminalShellPid(pid: Int) {}
+        
+        // 严格对齐两参数签名
+        override fun setTerminalShellPid(session: TerminalSession, pid: Int) {}
+        
         override fun logError(tag: String?, message: String?) {}
         override fun logWarn(tag: String?, message: String?) {}
         override fun logInfo(tag: String?, message: String?) {}
@@ -42,7 +44,6 @@ class MainActivity : ComponentActivity() {
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
-                    // 必须传入 null 作为 AttributeSet，并返回 View
                     terminalView = TerminalView(context, null).apply {
                         setTerminalViewClient(object : TerminalViewClient {
                             override fun onScale(scale: Float): Boolean = false
@@ -55,14 +56,9 @@ class MainActivity : ComponentActivity() {
                             override fun onKeyDown(keyCode: Int, e: android.view.KeyEvent, session: TerminalSession?): Boolean = false
                             override fun onKeyUp(keyCode: Int, e: android.view.KeyEvent): Boolean = false
                             override fun onLongPress(event: android.view.MotionEvent?): Boolean = false
-                            override fun readControlSequenceFromTerminal(session: TerminalSession?) {}
-                            override fun onCodePoint(codePoint: Int, ctrlDown: Boolean, session: TerminalSession?): Boolean = false
-                            override fun onEmulatorSet() {}
-                            override fun logStderr(message: String?) {}
-                            override fun logStackTrace(message: String?) {}
                         })
                     }
-                    terminalView // 返回实例
+                    terminalView
                 }
             )
             startShellSession()
@@ -86,7 +82,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // TerminalSession 没有 finish()，直接置空让系统回收
         terminalSession = null
     }
 }
