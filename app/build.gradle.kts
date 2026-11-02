@@ -30,6 +30,18 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.activity:activity-compose:1.9.2")
-    implementation("com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
-    implementation("androidx.concurrent:concurrent-futures:1.1.0")
+}
+
+// 补全 ProfileInstaller 缺失的 ListenableFuture 依赖
+dependencies {
+    implementation("com.google.guava:guava:32.1.3-android")
+    implementation("androidx.concurrent:concurrent-futures:1.2.0")
+}
+
+// 强制所有组件使用同一个版本的 ListenableFuture
+configurations.all {
+    resolutionStrategy {
+        force("com.google.guava:guava:32.1.3-android")
+        force("androidx.concurrent:concurrent-futures:1.2.0")
+    }
 }
