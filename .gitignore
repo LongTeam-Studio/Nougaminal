@@ -8,3 +8,5 @@ app/libs/*.aar
 *.jks
 *.apk
 *.zip
+*.apk
+*.zip
