@@ -50,9 +50,6 @@ class MainActivity : ComponentActivity() {
                         isFocusable = true
                         isFocusableInTouchMode = true
                         
-                        // 【核心修复】：主动初始化 TerminalRenderer，防止 mFontWidth 空指针
-                        setTextSize(20)
-                        
                         setTerminalViewClient(object : TerminalViewClient {
                             override fun onScale(scale: Float): Float = 1.0f
                             override fun onSingleTapUp(e: MotionEvent?) {
@@ -87,7 +84,10 @@ class MainActivity : ComponentActivity() {
                             override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
                                 if (right - left > 0 && bottom - top > 0) {
                                     v?.removeOnLayoutChangeListener(this)
-                                    startShellSession()
+                                    // 延迟到消息队列末尾，确保 onSizeChanged 已经跑完
+                                    v?.post {
+                                        startShellSession()
+                                    }
                                 }
                             }
                         })
@@ -100,6 +100,9 @@ class MainActivity : ComponentActivity() {
 
     private fun startShellSession() {
         if (::terminalView.isInitialized && terminalSession == null) {
+            // 终极防御：在绑定前强行初始化 mRenderer
+            terminalView.setTextSize(20)
+            
             val shell = "/system/bin/sh"
             val cwd = filesDir.absolutePath
             val args = arrayOf("-l")
@@ -109,6 +112,8 @@ class MainActivity : ComponentActivity() {
                 "PATH=/sbin:/system/sbin:/system/bin:/system/xbin"
             )
             terminalSession = TerminalSession(shell, cwd, args, env, 1000, sessionClient)
+            
+            // attachSession 内部会自动计算尺寸并 updateSize，千万别手动传 80x24 了
             terminalView.attachSession(terminalSession)
             terminalView.requestFocus()
         }
