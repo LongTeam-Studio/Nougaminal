@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
                             override fun onSingleTapUp(e: MotionEvent?) {}
                             override fun shouldBackButtonBeMappedToEscape(): Boolean = false
                             // 注意这里：彻底干掉那个多余的 c
-                            override fun shouldEnforeCharBasedInput(): Boolean = false
+                            override fun shouldEnforceCharBasedInput(): Boolean = false
                             override fun shouldUseCtrlSpaceWorkaround(): Boolean = false
                             override fun isTerminalViewSelected(): Boolean = true
                             override fun copyModeChanged(copyMode: Boolean) {}
