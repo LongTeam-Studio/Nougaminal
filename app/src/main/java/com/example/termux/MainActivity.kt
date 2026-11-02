@@ -49,9 +49,8 @@ class MainActivity : ComponentActivity() {
                             override fun onScale(scale: Float): Float = 1.0f
                             override fun onSingleTapUp(e: MotionEvent?) {}
                             override fun shouldBackButtonBeMappedToEscape(): Boolean = false
-                            // 注意这里：彻底干掉那个多余的 c
                             override fun shouldEnforceCharBasedInput(): Boolean = false
- override fun onCodePoint(codePoint: Int, ctrlDown: Boolean, session: TerminalSession?): Boolean = false                           override fun shouldUseCtrlSpaceWorkaround(): Boolean = false
+                            override fun shouldUseCtrlSpaceWorkaround(): Boolean = false
                             override fun isTerminalViewSelected(): Boolean = true
                             override fun copyModeChanged(copyMode: Boolean) {}
                             override fun onKeyDown(keyCode: Int, e: KeyEvent, session: TerminalSession?): Boolean = false
@@ -61,6 +60,15 @@ class MainActivity : ComponentActivity() {
                             override fun readAltKey(): Boolean = false
                             override fun readShiftKey(): Boolean = false
                             override fun readFnKey(): Boolean = false
+                            override fun onCodePoint(codePoint: Int, ctrlDown: Boolean, session: TerminalSession?): Boolean = false
+                            override fun onEmulatorSet() {}
+                            override fun logError(tag: String?, message: String?) {}
+                            override fun logWarn(tag: String?, message: String?) {}
+                            override fun logInfo(tag: String?, message: String?) {}
+                            override fun logDebug(tag: String?, message: String?) {}
+                            override fun logVerbose(tag: String?, message: String?) {}
+                            override fun logStackTraceWithMessage(tag: String?, message: String?, e: Exception?) {}
+                            override fun logStackTrace(tag: String?, e: Exception?) {}
                         })
                     }
                     terminalView
