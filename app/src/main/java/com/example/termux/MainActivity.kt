@@ -50,16 +50,16 @@ class MainActivity : ComponentActivity() {
                         isFocusable = true
                         isFocusableInTouchMode = true
                         
+                        // 【核心修复】：主动初始化 TerminalRenderer，防止 mFontWidth 空指针
+                        setTextSize(20)
+                        
                         setTerminalViewClient(object : TerminalViewClient {
                             override fun onScale(scale: Float): Float = 1.0f
-                            
-                            // 优化：点击屏幕时，强制请求焦点并弹出键盘
                             override fun onSingleTapUp(e: MotionEvent?) {
                                 requestFocus()
                                 val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                                 imm.showSoftInput(this@apply, InputMethodManager.SHOW_IMPLICIT)
                             }
-                            
                             override fun shouldBackButtonBeMappedToEscape(): Boolean = false
                             override fun shouldEnforceCharBasedInput(): Boolean = false
                             override fun shouldUseCtrlSpaceWorkaround(): Boolean = false
@@ -83,7 +83,6 @@ class MainActivity : ComponentActivity() {
                             override fun logStackTrace(tag: String?, e: Exception?) {}
                         })
 
-                        // 等待布局完成后再绑定 Session
                         addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
                             override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
                                 if (right - left > 0 && bottom - top > 0) {
@@ -110,11 +109,7 @@ class MainActivity : ComponentActivity() {
                 "PATH=/sbin:/system/sbin:/system/bin:/system/xbin"
             )
             terminalSession = TerminalSession(shell, cwd, args, env, 1000, sessionClient)
-            
-            // 绑定后，Termux 内部会根据当前 View 的尺寸自动计算并调用 updateSize()
             terminalView.attachSession(terminalSession)
-            
-            // 默认让终端获取焦点
             terminalView.requestFocus()
         }
     }
