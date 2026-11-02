@@ -49,6 +49,7 @@ class MainActivity : ComponentActivity() {
                             override fun onScale(scale: Float): Float = 1.0f
                             override fun onSingleTapUp(e: MotionEvent?) {}
                             override fun shouldBackButtonBeMappedToEscape(): Boolean = false
+                            // 注意这里：彻底干掉那个多余的 c
                             override fun shouldEnforeCharBasedInput(): Boolean = false
                             override fun shouldUseCtrlSpaceWorkaround(): Boolean = false
                             override fun isTerminalViewSelected(): Boolean = true
@@ -66,7 +67,6 @@ class MainActivity : ComponentActivity() {
                 }
             )
             
-            // 使用 LaunchedEffect 确保在 View 树构建完毕后再启动 Shell
             LaunchedEffect(Unit) {
                 startShellSession()
             }
