@@ -1,12 +1,14 @@
 package com.example.termux
 
+import android.content.Context
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.termux.terminal.TerminalSession
@@ -45,9 +47,19 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
                     terminalView = TerminalView(context, null).apply {
+                        isFocusable = true
+                        isFocusableInTouchMode = true
+                        
                         setTerminalViewClient(object : TerminalViewClient {
                             override fun onScale(scale: Float): Float = 1.0f
-                            override fun onSingleTapUp(e: MotionEvent?) {}
+                            
+                            // 优化：点击屏幕时，强制请求焦点并弹出键盘
+                            override fun onSingleTapUp(e: MotionEvent?) {
+                                requestFocus()
+                                val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                                imm.showSoftInput(this@apply, InputMethodManager.SHOW_IMPLICIT)
+                            }
+                            
                             override fun shouldBackButtonBeMappedToEscape(): Boolean = false
                             override fun shouldEnforceCharBasedInput(): Boolean = false
                             override fun shouldUseCtrlSpaceWorkaround(): Boolean = false
@@ -70,14 +82,20 @@ class MainActivity : ComponentActivity() {
                             override fun logStackTraceWithMessage(tag: String?, message: String?, e: Exception?) {}
                             override fun logStackTrace(tag: String?, e: Exception?) {}
                         })
+
+                        // 等待布局完成后再绑定 Session
+                        addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
+                            override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
+                                if (right - left > 0 && bottom - top > 0) {
+                                    v?.removeOnLayoutChangeListener(this)
+                                    startShellSession()
+                                }
+                            }
+                        })
                     }
                     terminalView
                 }
             )
-            
-            LaunchedEffect(Unit) {
-                startShellSession()
-            }
         }
     }
 
@@ -92,8 +110,12 @@ class MainActivity : ComponentActivity() {
                 "PATH=/sbin:/system/sbin:/system/bin:/system/xbin"
             )
             terminalSession = TerminalSession(shell, cwd, args, env, 1000, sessionClient)
+            
+            // 绑定后，Termux 内部会根据当前 View 的尺寸自动计算并调用 updateSize()
             terminalView.attachSession(terminalSession)
-            terminalSession?.updateSize(80, 24, 0, 0)
+            
+            // 默认让终端获取焦点
+            terminalView.requestFocus()
         }
     }
 
