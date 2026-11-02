@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                             override fun shouldBackButtonBeMappedToEscape(): Boolean = false
                             // 注意这里：彻底干掉那个多余的 c
                             override fun shouldEnforceCharBasedInput(): Boolean = false
-                            override fun shouldUseCtrlSpaceWorkaround(): Boolean = false
+ override fun onCodePoint(codePoint: Int, ctrlDown: Boolean, session: TerminalSession?): Boolean = false                           override fun shouldUseCtrlSpaceWorkaround(): Boolean = false
                             override fun isTerminalViewSelected(): Boolean = true
                             override fun copyModeChanged(copyMode: Boolean) {}
                             override fun onKeyDown(keyCode: Int, e: KeyEvent, session: TerminalSession?): Boolean = false
