@@ -112,13 +112,9 @@ class MainActivity : ComponentActivity() {
             terminalSession = TerminalSession(shell, cwd, args, env, 1000, sessionClient)
             terminalView.attachSession(terminalSession)
             
-            // 安全读取 assets 里的 Banner
-            val banner = try {
-                assets.open("banner.txt").bufferedReader().use { it.readText() }
-            } catch (e: Exception) {
-                "Welcome to Nougaminal!\n"
-            }
-            terminalSession?.write("$banner\n\nWelcome to Nougaminal Terminal!\n\n".toByteArray())
+            // 直接硬编码一个极简 Banner，绝不依赖外部资源
+            val banner = "\n--- Nougaminal Terminal v0.00.1-PV ---\n\n"
+            terminalSession?.write(banner.toByteArray())
             
             terminalView.requestFocus()
         }
