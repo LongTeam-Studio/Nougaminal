@@ -112,19 +112,8 @@ class MainActivity : ComponentActivity() {
             terminalSession = TerminalSession(shell, cwd, args, env, 1000, sessionClient)
             terminalView.attachSession(terminalSession)
             
-            // 使用纯文本，去除中文和特殊字符干扰，保证绝对不编译报错
-            val banner = "\n" +
-                    " _   _                 _                 _             _ \n" +
-                    "| \\ | |               (_)               (_)           | |\n" +
-                    "|  \\| | ___  _   _  __ _ _ __ ___   __ _ _ _ __   __ _| |\n" +
-                    "| . ` |/ _ \\| | | |/ _` | '_ ` _ \\ / _` | | '_ \\ / _` | |\n" +
-                    "| |\\  | (_) | |_| | (_| | | | | | | (_| | | | | | (_| | |\n" +
-                    "|_| \\_|\\___/ \\__,_|\\__, |_| |_| |_|\\__,_|_|_| |_|\\__,_|_|\n" +
-                    "                    __/ |    [0.00.1-PV]\n" +
-                    "                   |___/\n\n" +
-                    "Welcome to Nougaminal Terminal!\n\n"
-            
-            // 将 Banner 转换为字节流写入终端
+            // 从 strings.xml 中安全读取 ASCII 横幅
+            val banner = getString(R.string.welcome_banner) + "\n\nWelcome to Nougaminal Terminal!\n\n"
             terminalSession?.write(banner.toByteArray())
             
             terminalView.requestFocus()
