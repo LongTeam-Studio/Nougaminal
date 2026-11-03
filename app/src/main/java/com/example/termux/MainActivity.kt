@@ -112,25 +112,20 @@ class MainActivity : ComponentActivity() {
             terminalSession = TerminalSession(shell, cwd, args, env, 1000, sessionClient)
             terminalView.attachSession(terminalSession)
             
-            // === 核心注入区：终端启动后立即打印自定义 Banner ===
-            val banner = """
-                
-                 _   _                 _                 _             _ 
-                | \ | |               (_)               (_)           | |
-                |  \| | ___  _   _  __ _ _ __ ___   __ _ _ _ __   __ _| |
-                | . ` |/ _ \| | | |/ _` | '_ ` _ \ / _` | | '_ \ / _` | |
-                | |\  | (_) | |_| | (_| | | | | | | (_| | | | | | (_| | |
-                |_| \_|\___/ \__,_|\__, |_| |_| |_|\__,_|_|_| |_|\__,_|_|
-                                     __/ |    [0.00.1-PV]
-                                    |___/
-                
-                欢迎使用 Nougaminal 终端！
-                当前运行环境: ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})
-                
-            """.trimIndent()
+            // 使用纯文本，去除中文和特殊字符干扰，保证绝对不编译报错
+            val banner = "\n" +
+                    " _   _                 _                 _             _ \n" +
+                    "| \\ | |               (_)               (_)           | |\n" +
+                    "|  \\| | ___  _   _  __ _ _ __ ___   __ _ _ _ __   __ _| |\n" +
+                    "| . ` |/ _ \\| | | |/ _` | '_ ` _ \\ / _` | | '_ \\ / _` | |\n" +
+                    "| |\\  | (_) | |_| | (_| | | | | | | (_| | | | | | (_| | |\n" +
+                    "|_| \\_|\\___/ \\__,_|\\__, |_| |_| |_|\\__,_|_|_| |_|\\__,_|_|\n" +
+                    "                    __/ |    [0.00.1-PV]\n" +
+                    "                   |___/\n\n" +
+                    "Welcome to Nougaminal Terminal!\n\n"
             
             // 将 Banner 转换为字节流写入终端
-            terminalSession?.write("$banner\n".toByteArray())
+            terminalSession?.write(banner.toByteArray())
             
             terminalView.requestFocus()
         }
