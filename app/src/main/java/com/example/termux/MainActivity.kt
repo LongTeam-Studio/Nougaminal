@@ -113,7 +113,7 @@ class MainActivity : ComponentActivity() {
             terminalView.attachSession(terminalSession)
             
             val banner = "\n--- Nougaminal Terminal v0.00.1-PV ---\n\n"
-            terminalSession?.write(banner.toByteArray())
+            terminalSession?.write(banner)
             
             terminalView.requestFocus()
         }
