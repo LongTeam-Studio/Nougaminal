@@ -1,4 +1,4 @@
-package com.example.termux
+package top.longteamstudio.nougaminal
 
 import android.content.Context
 import android.os.Bundle

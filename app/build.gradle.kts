@@ -4,10 +4,10 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 android {
-    namespace = "com.example.termux"
+    namespace = "top.longteamstudio.nougaminal"
     compileSdk = 34
     defaultConfig {
-        applicationId = "com.example.termux"
+        applicationId = "top.longteamstudio.nougaminal"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
