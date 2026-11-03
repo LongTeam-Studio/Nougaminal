@@ -1,5 +1,7 @@
 package top.longteamstudio.nougaminal
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
 import android.view.KeyEvent
@@ -37,8 +39,26 @@ class MainActivity : ComponentActivity() {
         }
         override fun onTitleChanged(changedSession: TerminalSession) {}
         override fun onSessionFinished(finishedSession: TerminalSession) {}
-        override fun onCopyTextToClipboard(session: TerminalSession, text: String?) {}
-        override fun onPasteTextFromClipboard(session: TerminalSession?) {}
+        
+        // 真正的复制实现
+        override fun onCopyTextToClipboard(session: TerminalSession, text: String?) {
+            if (!text.isNullOrEmpty()) {
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText("Nougaminal", text))
+            }
+        }
+        
+        // 真正的粘贴实现
+        override fun onPasteTextFromClipboard(session: TerminalSession?) {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            if (clipboard.hasPrimaryClip()) {
+                val text = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+                if (!text.isNullOrEmpty() && session != null) {
+                    session.write(text)
+                }
+            }
+        }
+        
         override fun onBell(session: TerminalSession) {}
         override fun onColorsChanged(session: TerminalSession) {}
         override fun onTerminalCursorStateChange(state: Boolean) {}
@@ -58,14 +78,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme(colorScheme = darkColorScheme()) {
                 Column(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-                    // 终端占满上方所有空间
                     AndroidView(
                         modifier = Modifier.weight(1f).fillMaxWidth(),
                         factory = { context ->
                             terminalView = TerminalView(context, null).apply {
                                 isFocusable = true
                                 isFocusableInTouchMode = true
-                                setTextSize(18) // 稍微调小一点字号，适合手机
+                                setTextSize(18)
                                 
                                 setTerminalViewClient(object : TerminalViewClient {
                                     override fun onScale(scale: Float): Float = 1.0f
@@ -110,10 +129,11 @@ class MainActivity : ComponentActivity() {
                         }
                     )
                     
-                    // 我们的独家定制：底部快捷键栏
-                    ExtraKeysBar { keyString ->
-                        terminalSession?.write(keyString)
-                    }
+                    // 将粘贴动作传给底栏
+                    ExtraKeysBar(
+                        onKey = { keyString -> terminalSession?.write(keyString) },
+                        onPaste = { sessionClient.onPasteTextFromClipboard(terminalSession) }
+                    )
                 }
             }
         }
@@ -134,7 +154,7 @@ class MainActivity : ComponentActivity() {
             terminalSession = TerminalSession(shell, cwd, args, env, 2000, sessionClient)
             terminalView.attachSession(terminalSession)
             
-            val banner = "\n--- Nougaminal Terminal v0.00.2-PV ---\n\n"
+            val banner = "\n--- Nougaminal Terminal v0.00.3-PV ---\n\n"
             terminalSession?.write(banner)
             terminalView.requestFocus()
         }
@@ -146,13 +166,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// 极客专属的快捷键栏 Composable
 @Composable
-fun ExtraKeysBar(onKey: (String) -> Unit) {
+fun ExtraKeysBar(onKey: (String) -> Unit, onPaste: () -> Unit) {
     val keys = listOf(
         "ESC" to "\u001b",
         "TAB" to "\t",
-        "CTRL" to "\u0003", // 这里简单模拟 Ctrl+C 中断
+        "CTRL" to "\u0003",
         "|" to "|",
         "-" to "-",
         "/" to "/",
@@ -170,6 +189,23 @@ fun ExtraKeysBar(onKey: (String) -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // 添加专属粘贴按钮
+        item {
+            TextButton(
+                onClick = onPaste,
+                modifier = Modifier.height(36.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+            ) {
+                Text(
+                    text = "PASTE",
+                    color = Color.Green,
+                    fontSize = 14.sp,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+        
         items(keys) { (label, value) ->
             TextButton(
                 onClick = { onKey(value) },
