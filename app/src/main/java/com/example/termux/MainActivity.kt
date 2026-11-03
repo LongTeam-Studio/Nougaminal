@@ -1,7 +1,5 @@
 package com.example.termux
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
 import android.view.KeyEvent
@@ -26,26 +24,8 @@ class MainActivity : ComponentActivity() {
         override fun onTextChanged(changedSession: TerminalSession) {}
         override fun onTitleChanged(changedSession: TerminalSession) {}
         override fun onSessionFinished(finishedSession: TerminalSession) {}
-        
-        // 【修复】真正实现复制功能
-        override fun onCopyTextToClipboard(session: TerminalSession, text: String?) {
-            if (!text.isNullOrEmpty()) {
-                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                clipboard.setPrimaryClip(ClipData.newPlainText("Terminal", text))
-            }
-        }
-        
-        // 【修复】真正实现粘贴功能
-        override fun onPasteTextFromClipboard(session: TerminalSession?) {
-            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            if (clipboard.hasPrimaryClip()) {
-                val text = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
-                if (!text.isNullOrEmpty() && session != null) {
-                    session.write(text)
-                }
-            }
-        }
-        
+        override fun onCopyTextToClipboard(session: TerminalSession, text: String?) {}
+        override fun onPasteTextFromClipboard(session: TerminalSession?) {}
         override fun onBell(session: TerminalSession) {}
         override fun onColorsChanged(session: TerminalSession) {}
         override fun onTerminalCursorStateChange(state: Boolean) {}
@@ -64,7 +44,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             AndroidView(
-                // 【修复】去掉了 imePadding，解决盲打问题
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
                     terminalView = TerminalView(context, null).apply {
@@ -85,10 +64,7 @@ class MainActivity : ComponentActivity() {
                             override fun copyModeChanged(copyMode: Boolean) {}
                             override fun onKeyDown(keyCode: Int, e: KeyEvent, session: TerminalSession?): Boolean = false
                             override fun onKeyUp(keyCode: Int, e: KeyEvent): Boolean = false
-                            
-                            // 这里返回 false，让 TerminalView 自己去处理长按选词，不然我们就把系统的长按菜单拦截掉了
                             override fun onLongPress(event: MotionEvent?): Boolean = false
-                            
                             override fun readControlKey(): Boolean = false
                             override fun readAltKey(): Boolean = false
                             override fun readShiftKey(): Boolean = false
@@ -129,11 +105,33 @@ class MainActivity : ComponentActivity() {
             val env = arrayOf(
                 "TERM=xterm-256color",
                 "HOME=$cwd",
-                "PATH=/sbin:/system/sbin:/system/bin:/system/xbin"
-                // LANG 等环境变量会在下一版加上，目前纯英文没影响
+                "PATH=/sbin:/system/sbin:/system/bin:/system/xbin",
+                "LANG=en_US.UTF-8",
+                "LC_ALL=en_US.UTF-8"
             )
             terminalSession = TerminalSession(shell, cwd, args, env, 1000, sessionClient)
             terminalView.attachSession(terminalSession)
+            
+            // === 核心注入区：终端启动后立即打印自定义 Banner ===
+            val banner = """
+                
+                 _   _                 _                 _             _ 
+                | \ | |               (_)               (_)           | |
+                |  \| | ___  _   _  __ _ _ __ ___   __ _ _ _ __   __ _| |
+                | . ` |/ _ \| | | |/ _` | '_ ` _ \ / _` | | '_ \ / _` | |
+                | |\  | (_) | |_| | (_| | | | | | | (_| | | | | | (_| | |
+                |_| \_|\___/ \__,_|\__, |_| |_| |_|\__,_|_|_| |_|\__,_|_|
+                                     __/ |    [0.00.1-PV]
+                                    |___/
+                
+                欢迎使用 Nougaminal 终端！
+                当前运行环境: ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})
+                
+            """.trimIndent()
+            
+            // 将 Banner 转换为字节流写入终端
+            terminalSession?.write("$banner\n".toByteArray())
+            
             terminalView.requestFocus()
         }
     }
