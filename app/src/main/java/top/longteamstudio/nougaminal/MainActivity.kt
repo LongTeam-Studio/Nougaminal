@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,24 +38,19 @@ class MainActivity : ComponentActivity() {
         }
         override fun onTitleChanged(changedSession: TerminalSession) {}
         override fun onSessionFinished(finishedSession: TerminalSession) {}
-        
         override fun onCopyTextToClipboard(session: TerminalSession, text: String?) {
             if (!text.isNullOrEmpty()) {
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 clipboard.setPrimaryClip(ClipData.newPlainText("Nougaminal", text))
             }
         }
-        
         override fun onPasteTextFromClipboard(session: TerminalSession?) {
             val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             if (clipboard.hasPrimaryClip()) {
                 val text = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
-                if (!text.isNullOrEmpty() && session != null) {
-                    session.write(text)
-                }
+                if (!text.isNullOrEmpty() && session != null) session.write(text)
             }
         }
-        
         override fun onBell(session: TerminalSession) {}
         override fun onColorsChanged(session: TerminalSession) {}
         override fun onTerminalCursorStateChange(state: Boolean) {}
@@ -83,7 +77,6 @@ class MainActivity : ComponentActivity() {
                                 isFocusable = true
                                 isFocusableInTouchMode = true
                                 setTextSize(18)
-                                
                                 setTerminalViewClient(object : TerminalViewClient {
                                     override fun onScale(scale: Float): Float = 1.0f
                                     override fun onSingleTapUp(e: MotionEvent?) {
@@ -113,7 +106,6 @@ class MainActivity : ComponentActivity() {
                                     override fun logStackTraceWithMessage(tag: String?, message: String?, e: Exception?) {}
                                     override fun logStackTrace(tag: String?, e: Exception?) {}
                                 })
-
                                 addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
                                     override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
                                         if (right - left > 0 && bottom - top > 0) {
@@ -126,7 +118,6 @@ class MainActivity : ComponentActivity() {
                             terminalView
                         }
                     )
-                    
                     ExtraKeysBar(
                         onKey = { keyString -> terminalSession?.write(keyString) },
                         onPaste = { sessionClient.onPasteTextFromClipboard(terminalSession) }
@@ -138,21 +129,15 @@ class MainActivity : ComponentActivity() {
 
     private fun startShellSession() {
         if (::terminalView.isInitialized && terminalSession == null) {
-            val shell = "/system/bin/sh"
-            val cwd = filesDir.absolutePath
-            val args = arrayOf("-l")
             val env = arrayOf(
                 "TERM=xterm-256color",
-                "HOME=$cwd",
+                "HOME=${filesDir.absolutePath}",
                 "PATH=/sbin:/system/sbin:/system/bin:/system/xbin",
-                "LANG=en_US.UTF-8",
-                "LC_ALL=en_US.UTF-8"
+                "LANG=en_US.UTF-8"
             )
-            terminalSession = TerminalSession(shell, cwd, args, env, 2000, sessionClient)
+            terminalSession = TerminalSession("/system/bin/sh", filesDir.absolutePath, arrayOf("-l"), env, 2000, sessionClient)
             terminalView.attachSession(terminalSession)
-            
-            val banner = "\n--- Nougaminal Terminal v0.00.3-PV ---\n\n"
-            terminalSession?.write(banner)
+            terminalSession?.write("\n--- Nougaminal v0.0.4-PV ---\n\n")
             terminalView.requestFocus()
         }
     }
@@ -166,55 +151,22 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ExtraKeysBar(onKey: (String) -> Unit, onPaste: () -> Unit) {
     val keys = listOf(
-        "ESC" to "\u001b",
-        "TAB" to "\t",
-        "CTRL" to "\u0003",
-        "|" to "|",
-        "-" to "-",
-        "/" to "/",
-        "←" to "\u001b[D",
-        "↑" to "\u001b[A",
-        "↓" to "\u001b[B",
-        "→" to "\u001b[C"
+        "ESC" to "\u001b", "TAB" to "\t", "CTRL" to "\u0003", "|" to "|", "-" to "-", "/" to "/",
+        "←" to "\u001b[D", "↑" to "\u001b[A", "↓" to "\u001b[B", "→" to "\u001b[C"
     )
-
     LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFF222222))
-            .padding(vertical = 4.dp, horizontal = 4.dp),
+        modifier = Modifier.fillMaxWidth().background(Color(0xFF222222)).padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         item {
-            TextButton(
-                onClick = onPaste,
-                modifier = Modifier.height(36.dp),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
-            ) {
-                Text(
-                    text = "PASTE",
-                    color = Color.Green,
-                    fontSize = 14.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
-                )
+            TextButton(onClick = onPaste, modifier = Modifier.height(36.dp)) {
+                Text("PASTE", color = Color.Green, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
         }
-        
         items(keys) { (label, value) ->
-            TextButton(
-                onClick = { onKey(value) },
-                modifier = Modifier.height(36.dp),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
-            ) {
-                Text(
-                    text = label,
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
-                )
+            TextButton(onClick = { onKey(value) }, modifier = Modifier.height(36.dp)) {
+                Text(label, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
