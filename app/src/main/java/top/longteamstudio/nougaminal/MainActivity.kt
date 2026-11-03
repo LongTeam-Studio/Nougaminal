@@ -40,7 +40,6 @@ class MainActivity : ComponentActivity() {
         override fun onTitleChanged(changedSession: TerminalSession) {}
         override fun onSessionFinished(finishedSession: TerminalSession) {}
         
-        // 真正的复制实现
         override fun onCopyTextToClipboard(session: TerminalSession, text: String?) {
             if (!text.isNullOrEmpty()) {
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -48,7 +47,6 @@ class MainActivity : ComponentActivity() {
             }
         }
         
-        // 真正的粘贴实现
         override fun onPasteTextFromClipboard(session: TerminalSession?) {
             val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             if (clipboard.hasPrimaryClip()) {
@@ -129,7 +127,6 @@ class MainActivity : ComponentActivity() {
                         }
                     )
                     
-                    // 将粘贴动作传给底栏
                     ExtraKeysBar(
                         onKey = { keyString -> terminalSession?.write(keyString) },
                         onPaste = { sessionClient.onPasteTextFromClipboard(terminalSession) }
@@ -189,7 +186,6 @@ fun ExtraKeysBar(onKey: (String) -> Unit, onPaste: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 添加专属粘贴按钮
         item {
             TextButton(
                 onClick = onPaste,
