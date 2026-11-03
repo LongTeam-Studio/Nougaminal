@@ -112,7 +112,7 @@ class MainActivity : ComponentActivity() {
             terminalSession = TerminalSession(shell, cwd, args, env, 1000, sessionClient)
             terminalView.attachSession(terminalSession)
             
-            // 从 assets 安全读取 Banner
+            // 安全读取 assets 里的 Banner
             val banner = try {
                 assets.open("banner.txt").bufferedReader().use { it.readText() }
             } catch (e: Exception) {
