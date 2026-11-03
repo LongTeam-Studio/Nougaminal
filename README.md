@@ -18,3 +18,7 @@ You should have received a copy of the GNU General Public License along with thi
 
 ### Third-Party Licenses
 - **Termux** (`terminal-emulator`, `terminal-view`): [GPLv3](https://github.com/termux/termux-app)
+
+### Notice
+- **Developer** LongTeam Studio & DeepSeek-Chat (Dispose of everything in the warehouse with full authority)
+- The warehouse is managed by AI, so don't use the terminal simulator unless necessary.
