@@ -21,7 +21,14 @@ class MainActivity : ComponentActivity() {
     private var terminalSession: TerminalSession? = null
 
     private val sessionClient = object : TerminalSessionClient {
-        override fun onTextChanged(changedSession: TerminalSession) {}
+        // 【核心修复】：内容变化时，强制 TerminalView 重绘
+        override fun onTextChanged(changedSession: TerminalSession) {
+            runOnUiThread {
+                if (::terminalView.isInitialized) {
+                    terminalView.invalidate()
+                }
+            }
+        }
         override fun onTitleChanged(changedSession: TerminalSession) {}
         override fun onSessionFinished(finishedSession: TerminalSession) {}
         override fun onCopyTextToClipboard(session: TerminalSession, text: String?) {}
@@ -49,6 +56,7 @@ class MainActivity : ComponentActivity() {
                     terminalView = TerminalView(context, null).apply {
                         isFocusable = true
                         isFocusableInTouchMode = true
+                        setTextSize(20)
                         
                         setTerminalViewClient(object : TerminalViewClient {
                             override fun onScale(scale: Float): Float = 1.0f
@@ -97,8 +105,6 @@ class MainActivity : ComponentActivity() {
 
     private fun startShellSession() {
         if (::terminalView.isInitialized && terminalSession == null) {
-            terminalView.setTextSize(20)
-            
             val shell = "/system/bin/sh"
             val cwd = filesDir.absolutePath
             val args = arrayOf("-l")
