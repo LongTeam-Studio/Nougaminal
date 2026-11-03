@@ -112,7 +112,6 @@ class MainActivity : ComponentActivity() {
             terminalSession = TerminalSession(shell, cwd, args, env, 1000, sessionClient)
             terminalView.attachSession(terminalSession)
             
-            // 直接硬编码一个极简 Banner，绝不依赖外部资源
             val banner = "\n--- Nougaminal Terminal v0.00.1-PV ---\n\n"
             terminalSession?.write(banner.toByteArray())
             
