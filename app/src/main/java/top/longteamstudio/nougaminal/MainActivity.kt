@@ -127,24 +127,35 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun startShellSession() {
-        if (::terminalView.isInitialized && terminalSession == null) {
-            val env = arrayOf(
-                "TERM=xterm-256color",
-                "HOME=${filesDir.absolutePath}",
-                "PATH=/sbin:/system/sbin:/system/bin:/system/xbin",
-                "LANG=en_US.UTF-8"
-            )
-            terminalSession = TerminalSession("/system/bin/sh", filesDir.absolutePath, arrayOf("-l"), env, 2000, sessionClient)
-            terminalView.attachSession(terminalSession)
-            terminalSession?.write("echo '\n--- Nougaminal v0.0.4-PV ---'\n\n")
-            terminalView.requestFocus()
-        }
-    }
+private fun startShellSession() {
+    if (::terminalView.isInitialized && terminalSession == null) {
+        // 1. 执行 Bootstrap 解压与软链接修复
+        Thread {
+            BootstrapInstaller.install(this)
+        }.start()
 
-    override fun onDestroy() {
-        super.onDestroy()
-        terminalSession = null
+        val prefix = "${filesDir.parentFile}/usr"
+        val home = filesDir.absolutePath
+        
+        // 2. 动态选择 Shell：有 bash 就用 bash，没有就退回 sh
+        val shell = if (File("$prefix/bin/bash").exists()) "$prefix/bin/bash" else "/system/bin/sh"
+
+        // 3. 注入完整环境变量
+        val env = arrayOf(
+            "TERM=xterm-256color",
+            "HOME=$home",
+            "PREFIX=$prefix",
+            "PATH=$prefix/bin:/sbin:/system/sbin:/system/bin:/system/xbin",
+            "LANG=en_US.UTF-8",
+            "LC_ALL=en_US.UTF-8",
+            "LD_LIBRARY_PATH=$prefix/lib",
+            "TMPDIR=$prefix/tmp"
+        )
+
+        terminalSession = TerminalSession(shell, home, arrayOf("-l"), env, 2000, sessionClient)
+        terminalView.attachSession(terminalSession)
+        terminalSession?.write("\n--- Nougaminal v0.0.7-Bootstrap ---\n\n")
+        terminalView.requestFocus()
     }
 }
 
