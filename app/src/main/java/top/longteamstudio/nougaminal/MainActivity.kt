@@ -128,37 +128,36 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-private fun startShellSession() {
-    if (::terminalView.isInitialized && terminalSession == null) {
-        // 1. 执行 Bootstrap 解压与软链接修复
-        Thread {
-            BootstrapInstaller.install(this)
-        }.start()
+    private fun startShellSession() {
+        if (::terminalView.isInitialized && terminalSession == null) {
+            Thread { BootstrapInstaller.install(this) }.start()
 
-        val prefix = "${filesDir.parentFile}/usr"
-        val home = filesDir.absolutePath
-        
-        // 2. 动态选择 Shell：有 bash 就用 bash，没有就退回 sh
-        val shell = if (File("$prefix/bin/bash").exists()) "$prefix/bin/bash" else "/system/bin/sh"
+            val prefix = "${filesDir.parentFile}/usr"
+            val bashPath = "$prefix/bin/bash"
+            val nativeBash = File(applicationInfo.nativeLibraryDir, "libbash.so")
 
-        // 3. 注入完整环境变量
-        val env = arrayOf(
-            "TERM=xterm-256color",
-            "HOME=$home",
-            "PREFIX=$prefix",
-            "PATH=$prefix/bin:/sbin:/system/sbin:/system/bin:/system/xbin",
-            "LANG=en_US.UTF-8",
-            "LC_ALL=en_US.UTF-8",
-            "LD_LIBRARY_PATH=$prefix/lib",
-            "TMPDIR=$prefix/tmp"
-        )
+            val shell = if (File(bashPath).exists() && nativeBash.exists()) {
+                try {
+                    Runtime.getRuntime().exec(arrayOf(bashPath, "-c", "echo ok")).waitFor()
+                    bashPath
+                } catch (e: Exception) { "/system/bin/linker64" }
+            } else { "/system/bin/sh" }
 
-        terminalSession = TerminalSession(shell, home, arrayOf("-l"), env, 2000, sessionClient)
-        terminalView.attachSession(terminalSession)
-        terminalSession?.write("\n--- Nougaminal v0.0.7-Bootstrap ---\n\n")
-        terminalView.requestFocus()
+            val args = if (shell == "/system/bin/linker64") arrayOf(bashPath, "-l") else arrayOf("-l")
+            val env = arrayOf(
+                "TERM=xterm-256color",
+                "HOME=${filesDir.absolutePath}",
+                "PREFIX=$prefix",
+                "PATH=$prefix/bin:/sbin:/system/sbin:/system/bin:/system/xbin",
+                "LANG=en_US.UTF-8",
+                "LD_LIBRARY_PATH=$prefix/lib"
+            )
+
+            terminalSession = TerminalSession(shell, filesDir.absolutePath, args, env, 2000, sessionClient)
+            terminalView.attachSession(terminalSession)
+            terminalView.requestFocus()
+        }
     }
-}
 
 @Composable
 fun ExtraKeysBar(onKey: (String) -> Unit, onPaste: () -> Unit) {
