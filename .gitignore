@@ -3,11 +3,8 @@ build/
 local.properties
 *.iml
 .idea/
-app/src/main/assets/*.zip
 app/libs/*.aar
 *.jks
 *.apk
-*.zip
 *.apk
-*.zip
 *.bak
