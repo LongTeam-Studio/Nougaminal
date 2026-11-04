@@ -130,9 +130,11 @@ class MainActivity : ComponentActivity() {
 
     private fun startShellSession() {
         if (::terminalView.isInitialized && terminalSession == null) {
-            Thread { BootstrapInstaller.install(this) }.start()
+            val installThread = Thread { BootstrapInstaller.install(this) }
+            installThread.start()
+            try { installThread.join() } catch (e: InterruptedException) { e.printStackTrace() }
 
-            val prefix = "${filesDir.parentFile}/usr"
+            val prefix = "${filesDir.absolutePath}/usr"
             val bashPath = "$prefix/bin/bash"
             val nativeBash = File(applicationInfo.nativeLibraryDir, "libbash.so")
 
@@ -155,6 +157,7 @@ class MainActivity : ComponentActivity() {
 
             terminalSession = TerminalSession(shell, filesDir.absolutePath, args, env, 2000, sessionClient)
             terminalView.attachSession(terminalSession)
+            terminalSession?.write("--- Nougaminal Terminal v0.00.7-PV ---\r\n\r\n")
             terminalView.requestFocus()
         }
     }

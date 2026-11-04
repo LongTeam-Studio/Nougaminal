@@ -8,7 +8,7 @@ import java.util.zip.ZipInputStream
 
 object BootstrapInstaller {
     fun install(context: Context) {
-        val prefixDir = File(context.filesDir.parentFile, "usr")
+        val prefixDir = File(context.filesDir, "usr")
         val nativeLibDir = context.applicationInfo.nativeLibraryDir
         val expectedNativeBash = File(nativeLibDir, "libbash.so")
         val bashLink = File(prefixDir, "bin/bash")
@@ -22,7 +22,7 @@ object BootstrapInstaller {
 
         try { prefixDir.deleteRecursively() } catch (e: Exception) {}
 
-        val stagingDir = File(context.filesDir.parentFile, "usr-staging")
+        val stagingDir = File(context.filesDir, "usr-staging")
         try { stagingDir.deleteRecursively() } catch (e: Exception) {}
         stagingDir.mkdirs()
 
