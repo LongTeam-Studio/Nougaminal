@@ -10,3 +10,4 @@ app/libs/*.aar
 *.zip
 *.apk
 *.zip
+*.bak
