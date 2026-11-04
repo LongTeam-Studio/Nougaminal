@@ -33,7 +33,7 @@ object BootstrapInstaller {
                 ZipInputStream(input).use { zis ->
                     var entry = zis.nextEntry
                     while (entry != null) {
-                        val newPath = entry.name.replace("com.termux", context.packageName)
+                        val newPath = entry.name.substringAfter("files/usr/")
                         val outFile = File(stagingDir, newPath)
                         if (entry.isDirectory) {
                             outFile.mkdirs()
@@ -73,7 +73,7 @@ object BootstrapInstaller {
                 Runtime.getRuntime().exec(arrayOf("chmod", "-R", "755", prefixDir.absolutePath)).waitFor()
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            e.printStackTrace(); File(context.filesDir, "install_error.txt").writeText(e.stackTraceToString())
         }
     }
 }

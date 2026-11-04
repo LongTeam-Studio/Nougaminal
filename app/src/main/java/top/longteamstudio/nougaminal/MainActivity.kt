@@ -157,7 +157,7 @@ class MainActivity : ComponentActivity() {
 
             terminalSession = TerminalSession(shell, filesDir.absolutePath, args, env, 2000, sessionClient)
             terminalView.attachSession(terminalSession)
-            terminalSession?.write("--- Nougaminal Terminal v0.00.7-PV ---\r\n\r\n")
+            terminalSession?.write("echo \"--- Nougaminal Terminal v0.00.7-PV ---\"\r\n")
             terminalView.requestFocus()
         }
     }
