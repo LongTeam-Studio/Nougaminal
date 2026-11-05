@@ -136,7 +136,7 @@ class MainActivity : ComponentActivity() {
             val bashPath = "$prefix/bin/bash"
             val nativeBash = File(applicationInfo.nativeLibraryDir, "libbash.so")
 
-            val shell = if (File(bashPath).exists() && nativeBash.exists()) {
+            val shell = if (nativeBash.exists()) { "/system/bin/linker64" } else if (false) {
                 try {
                     Runtime.getRuntime().exec(arrayOf(bashPath, "-c", "echo ok")).waitFor()
                     bashPath

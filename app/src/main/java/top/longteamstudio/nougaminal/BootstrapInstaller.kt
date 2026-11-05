@@ -62,7 +62,7 @@ object BootstrapInstaller {
                             linkFile.parentFile?.mkdirs()
                             try {
                                 if (linkFile.exists()) linkFile.delete()
-                                Os.symlink(nativePath, linkFile.absolutePath)
+                                File(stagingDir.absolutePath + "/" + target).copyTo(linkFile, overwrite = true)
                             } catch (e: Exception) {}
                         }
                     }
