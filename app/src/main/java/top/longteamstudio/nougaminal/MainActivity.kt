@@ -130,9 +130,7 @@ class MainActivity : ComponentActivity() {
 
     private fun startShellSession() {
         if (::terminalView.isInitialized && terminalSession == null) {
-            val installThread = Thread { BootstrapInstaller.install(this) }
-            installThread.start()
-            try { installThread.join() } catch (e: InterruptedException) { e.printStackTrace() }
+            Thread { BootstrapInstaller.install(this) }.start()
 
             val prefix = "${filesDir.absolutePath}/usr"
             val bashPath = "$prefix/bin/bash"
