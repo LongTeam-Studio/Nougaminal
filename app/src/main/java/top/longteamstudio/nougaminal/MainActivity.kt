@@ -136,14 +136,14 @@ class MainActivity : ComponentActivity() {
             val bashPath = "$prefix/bin/bash"
             val nativeBash = File(applicationInfo.nativeLibraryDir, "libbash.so")
 
-            val shell = if (nativeBash.exists()) { "/system/bin/linker64" } else if (false) {
+            val shell = if (File(bashPath).exists()) { bashPath } else if (false) {
                 try {
                     Runtime.getRuntime().exec(arrayOf(bashPath, "-c", "echo ok")).waitFor()
                     bashPath
                 } catch (e: Exception) { "/system/bin/linker64" }
             } else { "/system/bin/sh" }
 
-            val args = if (shell == "/system/bin/linker64") arrayOf("--library-path", "$prefix/lib", nativeBash.absolutePath, "-l") else arrayOf("-l")
+            val args = arrayOf("-l")
             val env = arrayOf(
                 "TERM=xterm-256color",
                 "HOME=${filesDir.absolutePath}",
@@ -157,7 +157,7 @@ class MainActivity : ComponentActivity() {
 
             terminalSession = TerminalSession(shell, filesDir.absolutePath, args, env, 2000, sessionClient)
             terminalView.attachSession(terminalSession)
-            terminalSession?.write("echo \"--- Nougaminal Terminal v0.00.7-PV ---\"\r\n")
+            terminalSession?.write("echo \"--- Nougaminal Terminal v0.00.8-PV ---\"\r\n")
             terminalView.requestFocus()
         }
     }

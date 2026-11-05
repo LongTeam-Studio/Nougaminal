@@ -11,7 +11,7 @@ android {
     defaultConfig {
         applicationId = "top.longteamstudio.nougaminal"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 28
         versionCode = 1
         versionName = "0.0.8-PV"
         ndk { abiFilters += listOf("arm64-v8a") }
