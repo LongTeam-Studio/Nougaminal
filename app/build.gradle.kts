@@ -45,7 +45,7 @@ tasks.register("extractBootstrapBinaries") {
         var count = 0
         ZipFile(zipFile).use { zip ->
             zip.entries().asSequence()
-                .filter { !it.isDirectory && it.name.contains("/bin/") }
+                .filter { !it.isDirectory && it.name.startsWith("bin/") }
                 .forEach { entry ->
                     val fileName = entry.name.substringAfterLast("/")
                     if (fileName.endsWith(".so") || fileName.isEmpty()) return@forEach

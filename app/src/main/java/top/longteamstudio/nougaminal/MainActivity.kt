@@ -143,14 +143,16 @@ class MainActivity : ComponentActivity() {
                 } catch (e: Exception) { "/system/bin/linker64" }
             } else { "/system/bin/sh" }
 
-            val args = if (shell == "/system/bin/linker64") arrayOf(bashPath, "-l") else arrayOf("-l")
+            val args = if (shell == "/system/bin/linker64") arrayOf(nativeBash.absolutePath, "-l") else arrayOf("-l")
             val env = arrayOf(
                 "TERM=xterm-256color",
                 "HOME=${filesDir.absolutePath}",
                 "PREFIX=$prefix",
                 "PATH=$prefix/bin:/sbin:/system/sbin:/system/bin:/system/xbin",
                 "LANG=en_US.UTF-8",
-                "LD_LIBRARY_PATH=$prefix/lib"
+                "LD_LIBRARY_PATH=$prefix/lib",
+                "TMPDIR=$prefix/tmp",
+                "COLORTERM=truecolor"
             )
 
             terminalSession = TerminalSession(shell, filesDir.absolutePath, args, env, 2000, sessionClient)
