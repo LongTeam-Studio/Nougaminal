@@ -155,6 +155,7 @@ class MainActivity : ComponentActivity() {
                 "COLORTERM=truecolor"
             )
 
+            val libDir = File(prefix, "lib"); if (libDir.exists()) { libDir.listFiles()?.forEach { f -> if (f.name.contains(".so.") && !f.name.endsWith(".so")) { val base = f.name.substringBefore(".so."); val ver = f.name.substringAfter(".so.").substringBefore("."); File(libDir, "$base.so.$ver").also { if (!it.exists()) f.copyTo(it) }; File(libDir, "$base.so").also { if (!it.exists()) f.copyTo(it) } } } }
             terminalSession = TerminalSession(shell, filesDir.absolutePath, args, env, 2000, sessionClient)
             terminalView.attachSession(terminalSession)
             terminalSession?.write("echo \"--- Nougaminal Terminal v0.00.8-PV ---\"\r\n")
