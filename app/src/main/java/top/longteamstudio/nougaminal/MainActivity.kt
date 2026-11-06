@@ -135,15 +135,27 @@ class MainActivity : ComponentActivity() {
             val prefix = "${filesDir.absolutePath}/usr"
             val bashPath = "$prefix/bin/bash"
             val nativeBash = File(applicationInfo.nativeLibraryDir, "libbash.so")
+            val nativeLibraryDir = applicationInfo.nativeLibraryDir
 
-            val shell = if (true) { "/system/bin/linker64" } else if (false) {
+            val shell = if (true) { "$nativeLibraryDir/libproot.so" } else if (false) {
                 try {
                     Runtime.getRuntime().exec(arrayOf(bashPath, "-c", "echo ok")).waitFor()
                     bashPath
                 } catch (e: Exception) { "/system/bin/linker64" }
             } else { "/system/bin/sh" }
 
-            val args = arrayOf(nativeBash.absolutePath, "-l")
+            val args = arrayOf(
+                "--rootfs=/",
+                "--cwd=${filesDir.absolutePath}",
+                "--link2symlink",
+                "--kill-on-exit",
+                "--bind=/dev",
+                "--bind=/proc",
+                "--bind=/sys",
+                "--bind=${filesDir.absolutePath}/tmp:/tmp",
+                "$prefix/bin/bash",
+                "-l"
+            )
             val env = arrayOf(
                 "TERM=xterm-256color",
                 "HOME=${filesDir.absolutePath}",
