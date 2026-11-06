@@ -136,14 +136,14 @@ class MainActivity : ComponentActivity() {
             val bashPath = "$prefix/bin/bash"
             val nativeBash = File(applicationInfo.nativeLibraryDir, "libbash.so")
 
-            val shell = if (File(bashPath).exists()) { bashPath } else if (false) {
+            val shell = if (true) { "/system/bin/linker64" } else if (false) {
                 try {
                     Runtime.getRuntime().exec(arrayOf(bashPath, "-c", "echo ok")).waitFor()
                     bashPath
                 } catch (e: Exception) { "/system/bin/linker64" }
             } else { "/system/bin/sh" }
 
-            val args = arrayOf("-l")
+            val args = arrayOf("--library-path", "$prefix/lib", nativeBash.absolutePath, "-l")
             val env = arrayOf(
                 "TERM=xterm-256color",
                 "HOME=${filesDir.absolutePath}",
@@ -151,6 +151,8 @@ class MainActivity : ComponentActivity() {
                 "PATH=$prefix/bin:/sbin:/system/sbin:/system/bin:/system/xbin",
                 "LANG=en_US.UTF-8",
                 "LD_LIBRARY_PATH=$prefix/lib",
+                "LD_PRELOAD=$prefix/lib/libtermux-exec-ld-preload.so",
+                "TERMUX_EXEC__SYSTEM_LINKER_EXEC=$prefix/lib/libtermux-exec-system-linker-exec",
                 "TMPDIR=$prefix/tmp",
                 "COLORTERM=truecolor"
             )
