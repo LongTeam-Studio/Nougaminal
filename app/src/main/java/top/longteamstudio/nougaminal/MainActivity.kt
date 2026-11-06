@@ -151,8 +151,6 @@ class MainActivity : ComponentActivity() {
                 "PATH=$prefix/bin:/sbin:/system/sbin:/system/bin:/system/xbin",
                 "LANG=en_US.UTF-8",
                 "LD_LIBRARY_PATH=$prefix/lib",
-                "LD_PRELOAD=$prefix/lib/libtermux-exec-ld-preload.so",
-                "TERMUX_EXEC__SYSTEM_LINKER_EXEC=$prefix/lib/libtermux-exec-system-linker-exec",
                 "TMPDIR=$prefix/tmp",
                 "COLORTERM=truecolor"
             )
