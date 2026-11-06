@@ -58,12 +58,10 @@ object BootstrapInstaller {
                             val target = parts[0].trim()
                             val linkPath = parts[1].trim().replace("com.termux", context.packageName)
                             val linkFile = File(stagingDir, linkPath)
-                            val targetName = target.substringAfterLast("/")
-                            val nativePath = nativeLibDir + "/lib" + targetName.replace("-", "_") + ".so"
                             linkFile.parentFile?.mkdirs()
                             try {
                                 if (linkFile.exists()) linkFile.delete()
-                                File(stagingDir.absolutePath + "/" + target).copyTo(linkFile, overwrite = true)
+                                val targetPathInStaging = target.substringAfter("/usr/"); val targetFile = File(stagingDir, targetPathInStaging); if (targetFile.exists()) targetFile.copyTo(linkFile, overwrite = true)
                             } catch (e: Exception) {}
                         }
                     }
