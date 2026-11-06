@@ -137,14 +137,10 @@ class MainActivity : ComponentActivity() {
             val nativeBash = File(applicationInfo.nativeLibraryDir, "libbash.so")
             val nativeLibraryDir = applicationInfo.nativeLibraryDir
 
-            val shell = if (true) { "$prefix/bin/proot" } else if (false) {
-                try {
-                    Runtime.getRuntime().exec(arrayOf(bashPath, "-c", "echo ok")).waitFor()
-                    bashPath
-                } catch (e: Exception) { "/system/bin/linker64" }
-            } else { "/system/bin/sh" }
-
-            val args = arrayOf(
+            val prootPath = "$prefix/bin/proot"
+            val isProotReady = File(prootPath).exists()
+            val shell = if (isProotReady) { prootPath } else { "/system/bin/sh" }
+            val args = if (isProotReady) arrayOf(
                 "--rootfs=/",
                 "--cwd=${filesDir.absolutePath}",
                 "--link2symlink",
@@ -155,22 +151,8 @@ class MainActivity : ComponentActivity() {
                 "--bind=${filesDir.absolutePath}/tmp:/tmp",
                 "$prefix/bin/bash",
                 "-l"
-            )
-            val env = arrayOf(
-                "TERM=xterm-256color",
-                "HOME=${filesDir.absolutePath}",
-                "PREFIX=$prefix",
-                "PATH=$prefix/bin:/sbin:/system/sbin:/system/bin:/system/xbin",
-                "LANG=en_US.UTF-8",
-                "LD_LIBRARY_PATH=$prefix/lib",
-                "LD_PRELOAD=$prefix/lib/libtermux-exec-ld-preload.so",
-                "TERMUX_EXEC__SYSTEM_LINKER_EXEC=$prefix/lib/libtermux-exec-system-linker-exec",
-                "TMPDIR=$prefix/tmp",
-                "COLORTERM=truecolor"
-            )
-
-            val libDir = File(prefix, "lib"); if (libDir.exists()) { libDir.listFiles()?.forEach { f -> if (f.name.contains(".so.") && !f.name.endsWith(".so")) { val base = f.name.substringBefore(".so."); val ver = f.name.substringAfter(".so.").substringBefore("."); File(libDir, "$base.so.$ver").also { if (!it.exists()) f.copyTo(it) }; File(libDir, "$base.so").also { if (!it.exists()) f.copyTo(it) } } } }
-            terminalSession = TerminalSession(shell, filesDir.absolutePath, args, env, 2000, sessionClient)
+            ) else arrayOf("-l")
+            terminalSession = TerminalSession(
             terminalView.attachSession(terminalSession)
             terminalSession?.write("echo \"--- Nougaminal Terminal v0.00.8-PV ---\"\r\n")
             terminalView.requestFocus()

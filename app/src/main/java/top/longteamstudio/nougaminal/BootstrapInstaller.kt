@@ -12,8 +12,9 @@ object BootstrapInstaller {
         val nativeLibDir = context.applicationInfo.nativeLibraryDir
         val expectedNativeBash = File(nativeLibDir, "libbash.so")
         val bashLink = File(prefixDir, "bin/bash")
+        val prootLink = File(prefixDir, "bin/proot")
 
-        if (bashLink.exists() && expectedNativeBash.exists()) {
+        if (bashLink.exists() && expectedNativeBash.exists() && prootLink.exists()) {
             try {
                 val result = Runtime.getRuntime().exec(arrayOf(bashLink.absolutePath, "-c", "echo ok")).waitFor()
                 if (result == 0) return
