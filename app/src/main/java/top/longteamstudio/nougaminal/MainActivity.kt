@@ -143,7 +143,7 @@ class MainActivity : ComponentActivity() {
                 } catch (e: Exception) { "/system/bin/linker64" }
             } else { "/system/bin/sh" }
 
-            val args = arrayOf("--library-path", "$prefix/lib", nativeBash.absolutePath, "-l")
+            val args = arrayOf(nativeBash.absolutePath, "-l")
             val env = arrayOf(
                 "TERM=xterm-256color",
                 "HOME=${filesDir.absolutePath}",
