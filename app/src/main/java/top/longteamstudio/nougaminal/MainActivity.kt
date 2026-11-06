@@ -152,7 +152,7 @@ class MainActivity : ComponentActivity() {
                 "$prefix/bin/bash",
                 "-l"
             ) else arrayOf("-l")
-            terminalSession = TerminalSession(
+            terminalSession = TerminalSession(shell, filesDir.absolutePath, args, env, 2000, sessionClient)
             terminalView.attachSession(terminalSession)
             terminalSession?.write("echo \"--- Nougaminal Terminal v0.00.8-PV ---\"\r\n")
             terminalView.requestFocus()
