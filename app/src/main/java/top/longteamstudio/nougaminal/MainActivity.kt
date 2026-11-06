@@ -137,7 +137,7 @@ class MainActivity : ComponentActivity() {
             val nativeBash = File(applicationInfo.nativeLibraryDir, "libbash.so")
             val nativeLibraryDir = applicationInfo.nativeLibraryDir
 
-            val shell = if (true) { "$nativeLibraryDir/libproot.so" } else if (false) {
+            val shell = if (true) { "$prefix/bin/proot" } else if (false) {
                 try {
                     Runtime.getRuntime().exec(arrayOf(bashPath, "-c", "echo ok")).waitFor()
                     bashPath
