@@ -152,6 +152,16 @@ class MainActivity : ComponentActivity() {
                 "$prefix/bin/bash",
                 "-l"
             ) else arrayOf("-l")
+            val env = arrayOf(
+                "TERM=xterm-256color",
+                "HOME=${filesDir.absolutePath}",
+                "PREFIX=$prefix",
+                "PATH=$prefix/bin:/sbin:/system/sbin:/system/bin:/system/xbin",
+                "LANG=en_US.UTF-8",
+                "LD_LIBRARY_PATH=$prefix/lib",
+                "DISPLAY=:0",
+                "XDG_RUNTIME_DIR=$prefix/tmp"
+            )
             terminalSession = TerminalSession(shell, filesDir.absolutePath, args, env, 2000, sessionClient)
             terminalView.attachSession(terminalSession)
             terminalSession?.write("echo \"--- Nougaminal Terminal v0.00.8-PV ---\"\r\n")
